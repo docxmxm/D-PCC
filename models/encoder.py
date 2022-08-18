@@ -10,6 +10,7 @@ class Encoder(nn.Module):
         super(Encoder, self).__init__()
 
         encoder_layers = []
+        #layer_num = 3
         for i in range(args.layer_num):
             encoder_layers.append(DownsampleLayer(args, i))
         self.encoder_layers = nn.ModuleList(encoder_layers)
@@ -17,7 +18,9 @@ class Encoder(nn.Module):
 
     def forward(self, xyzs, feats):
         # input: (b, c, n)
-
+        # b:batch size
+        # c: dimention
+        #n: number of points
         gt_xyzs = []
         gt_dnums = []
         gt_mdis = []
