@@ -164,9 +164,10 @@ class DownsampleLayer(nn.Module):
 
         self.post_conv = nn.Conv1d(args.dim * 3, args.dim, 1)
 
-
+        
     def get_density(self, sampled_xyzs, xyzs):
         # input: (b, 3, m), (b, 3, n)
+        
 
         batch_size = xyzs.shape[0]
         sample_num = sampled_xyzs.shape[2]
@@ -200,6 +201,7 @@ class DownsampleLayer(nn.Module):
         mask = torch.eq(expect_center, real_center)
 
         # (b, 3, m, k)
+        #index_point(xyz, idx) 根据sampleidex取xyz
         knn_xyzs = index_points(xyzs, knn_idx)
         # (b, 1, m, k)
         distance = torch.norm(knn_xyzs - sampled_xyzs[..., None], p=2, dim=1, keepdim=True)
@@ -215,6 +217,7 @@ class DownsampleLayer(nn.Module):
 
 
     def forward(self, xyzs, feats):
+        #feature -->after dimension increase which is 8
         # xyzs: (b, 3, n), features: (b, cin, n)
         if self.k > xyzs.shape[2]:
             self.k = xyzs.shape[2]
@@ -237,6 +240,12 @@ class DownsampleLayer(nn.Module):
         sampled_feats = index_points(feats, sample_idx)
 
         # embedding
+        # sampled_xyzs(b, 3, fps_sample_num)
+        # xyzs(b, 3, n)
+        # sampled_feats(b, 8, fps_sample_num)
+        # feats -->pre_conv(feats)///old feat (b, 8, n)
+        # knn_idx ->knnquery_heap
+        #
         ancestor_embedding = self.feats_agg_nn(sampled_xyzs, xyzs, sampled_feats, feats, feats, knn_idx, mask)
         position_embedding = self.position_embedding_nn(sampled_xyzs, xyzs, knn_idx, mask)
         density_embedding = self.density_embedding_nn(downsample_num.unsqueeze(1))
